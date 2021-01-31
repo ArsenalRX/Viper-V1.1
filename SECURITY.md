@@ -6,7 +6,7 @@ Versions List
 
 | Version of menu | Supported GTA branch        |
 | ------- | ------------------ |
-| 1.1 BETA  |1.52 :white_check_mark: |
+| 1.1 BETA PRIVATE |1.52 :white_check_mark: |
 
 
 ## Reporting 
