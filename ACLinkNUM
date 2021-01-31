@@ -10,7 +10,7 @@ int number;
 srand(25);
 
 
-cout<<"0-99999999999999999999"<<endl;
+cout<<"0-99999"<<endl;
 cin>>number;
 cin.ignore();
 
