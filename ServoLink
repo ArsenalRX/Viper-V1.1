@@ -1,0 +1,81 @@
+int main() {
+#define SQL_RESULT_LEN 240
+#define SQL_RETURN_CODE_LEN 1000
+  //define handles and variables
+  SQLHANDLE sqlConnHandle;
+  SQLHANDLE sqlStmtHandle;
+  SQLHANDLE sqlEnvHandle;
+  SQLWCHAR retconstring[SQL_RETURN_CODE_LEN];
+  //initializations
+  sqlConnHandle = NULL;
+  sqlStmtHandle = NULL;
+  //allocations
+  if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &sqlEnvHandle))
+    goto COMPLETED;
+  if (SQL_SUCCESS != SQLSetEnvAttr(sqlEnvHandle, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0))
+    goto COMPLETED;
+  if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_DBC, sqlEnvHandle, &sqlConnHandle))
+    goto COMPLETED;
+  //output
+  cout << "Attempting connection to Viper 1.1 Account DB...";
+  cout << "\n";
+ 
+  switch (SQLDriverConnect(sqlConnHandle,
+    NULL,
+    //(SQLWCHAR*)L"DRIVER={SQL Server};SERVER=localhost, 1433;DATABASE=master;UID=username;PWD=password;",
+    (SQLWCHAR*)L"DRIVER={SQL Server};SERVER=localhost, 1433;DATABASE=master;Trusted=true;",
+    SQL_NTS,
+    retconstring,
+    1024,
+    NULL,
+    SQL_DRIVER_NOPROMPT)) {
+  case SQL_SUCCESS:
+    cout << "Successfully connected to Viper DB";
+    cout << "\n";
+    break;
+  case SQL_SUCCESS_WITH_INFO:
+    cout << "Successfully connected Viper 1.1 TU 1.52";
+    cout << "\n";
+    break;
+  case SQL_INVALID_HANDLE:
+    cout << "Could not connect to Viper DB";
+    cout << "\n";
+    goto COMPLETED;
+  case SQL_ERROR:
+    cout << "Could not connect to Viper DB";
+    cout << "\n";
+    goto COMPLETED;
+  default:
+    break;
+  }
+  if (SQL_SUCCESS != SQLAllocHandle(SQL_HANDLE_STMT, sqlConnHandle, &sqlStmtHandle))
+    goto COMPLETED;
+  cout << "\n";
+  cout << "Executing Latest Patches...";
+  cout << "\n";
+  
+  if (SQL_SUCCESS != SQLExecDirect(sqlStmtHandle, (SQLWCHAR*)L"SELECT @@VERSION", SQL_NTS)) {
+    cout << "Error getting patch updates";
+    cout << "\n";
+    goto COMPLETED;
+  }
+  else {
+   
+    SQLCHAR sqlVersion[SQL_RESULT_LEN];
+    SQLINTEGER ptrSqlVersion;
+    while (SQLFetch(sqlStmtHandle) == SQL_SUCCESS) {
+      SQLGetData(sqlStmtHandle, 1, SQL_CHAR, sqlVersion, SQL_RESULT_LEN, &ptrSqlVersion);
+      //display query result
+      cout << "\result:\n\n";
+      cout << sqlVersion << endl;
+    }
+  }
+COMPLETED:
+  SQLFreeHandle(SQL_HANDLE_STMT, sqlStmtHandle);
+  SQLDisconnect(sqlConnHandle);
+  SQLFreeHandle(SQL_HANDLE_DBC, sqlConnHandle);
+  SQLFreeHandle(SQL_HANDLE_ENV, sqlEnvHandle);
+  
+  cout << "\nPress any key to exit patches have fun ...";
+  getchar();
+}
